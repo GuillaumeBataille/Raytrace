@@ -39,8 +39,8 @@ using namespace std;
 // OpenGL/GLUT application code.
 // -------------------------------------------
 //Variable globale
-#define NBSAMPLE 44
-#define NBBOUNCE 3
+#define NBSAMPLE 5
+#define NBBOUNCE 1
 #define ZNEAR 5
 static GLint window;
 static unsigned int SCREENWIDTH = 480;
@@ -362,11 +362,13 @@ int main(int argc, char **argv)
     key('?', 0, 0);
 
     camera.move(0., 0., -3.1);
-    selected_scene = 0;
-    scenes.resize(3);
+    selected_scene = 2;
+    scenes.resize(5);
     scenes[0].setup_single_sphere();
     scenes[1].setup_single_square();
     scenes[2].setup_cornell_box();
+    scenes[3].setup_single_mesh();
+    scenes[4].setup_cornell_box_mesh();
 
     glutMainLoop();
     return EXIT_SUCCESS;

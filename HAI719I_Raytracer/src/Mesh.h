@@ -85,7 +85,7 @@ protected:
             uvs_array[2*vert + 1] = vertices[vert].v;
         }
     }
-    void build_triangles_array() {
+    void build_triangles_array() { // Voici comment c'est codé mon triangle array qui contient tout
         triangles_array.resize( 3 * triangles.size() );
         for( unsigned int t = 0 ; t < triangles.size() ; ++t ) {
             triangles_array[3*t + 0] = triangles[t].v[0];
@@ -203,6 +203,20 @@ public:
         closestIntersection.t = FLT_MAX;
         // Note :
         // Creer un objet Triangle pour chaque face
+        for(size_t i = 0; i < triangles.size();i++) // Pour tout les triangles de mon mesh
+        {   
+            //On recup les positions des 3 sommets de chaque triangle
+            Vec3 s0 = vertices[triangles[i].v[0]].position; 
+            Vec3 s1 = vertices[triangles[i].v[1]].position;
+            Vec3 s2 = vertices[triangles[i].v[2]].position;
+            //std::cout<<s0<<" "<<s1<<" "<<s2<<std::endl;
+            Triangle current_tri = Triangle(s0,s1,s2);
+            RayTriangleIntersection current_intersect = current_tri.getIntersection(ray);
+            if (current_intersect.intersectionExists && current_intersect.t < closestIntersection.t){ // Si on intersect et qu'on est plus proche que le closest actuel
+                closestIntersection = current_intersect;
+            }
+        }
+        //Triangle 
         // Vous constaterez des problemes de précision
         // solution : ajouter un facteur d'échelle lors de la création du Triangle : float triangleScaling = 1.000001;
         return closestIntersection;
