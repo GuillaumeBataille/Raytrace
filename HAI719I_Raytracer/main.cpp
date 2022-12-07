@@ -39,8 +39,8 @@ using namespace std;
 // OpenGL/GLUT application code.
 // -------------------------------------------
 //Variable globale
-#define NBSAMPLE 20
-#define NBBOUNCE 1
+#define NBSAMPLE 10
+#define NBBOUNCE 0
 #define ZNEAR 5
 #define CURRENT_SCENE 4
 #define SCENE_NB 6
@@ -185,7 +185,10 @@ void ray_trace_from_camera()
     //    unsigned int nsamples = 100;
     unsigned int nsamples = NBSAMPLE;
     std::vector<Vec3> image(w * h, Vec3(0, 0, 0));
-
+    int neww = 0;
+    int old = 0;
+    std::cout<< old << " / " << h/4.8 << std::endl;
+    clock_t start = clock();
     for (int y = 0; y < h; y++)
     {
         for (int x = 0; x < w; x++)
@@ -203,9 +206,15 @@ void ray_trace_from_camera()
 
             image[x + y * w] /= nsamples;
         }
-        std::cout<< y << " / " << h << std::endl;
+        int old = ceil(y/4.8);
+        if (old != neww ){
+            neww = old;
+            std::cout<< neww << " / " << h/4.8 << std::endl;
+        }
     }
-    std::cout << "\tDone" << std::endl;
+    clock_t end = clock();
+    long double seconds = (float)(end - start) / CLOCKS_PER_SEC;
+    std::cout << "\tDone in "<< seconds<<" seconds"  << std::endl;
     /* // DEBUG ///////////////////////////computeIntersection(light, 0.0001).t
        float u = 0.5;
              float  v = 0.5;
