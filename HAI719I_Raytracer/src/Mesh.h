@@ -6,14 +6,14 @@
 #include <string>
 #include "Vec3.h"
 #include "Ray.h"
-#include "Triangle.h"
 #include "Material.h"
+#include "Box.h"
 
 #include <GL/glut.h>
 
 #include <cfloat>
 
-
+#define EPSILON 0.5
 // -------------------------------------------
 // Basic Mesh class
 // -------------------------------------------
@@ -58,8 +58,6 @@ struct MeshTriangle {
 };
 
 
-
-
 class Mesh {
 protected:
     void build_positions_array() {
@@ -94,6 +92,10 @@ protected:
         }
     }
 public:
+    Vec3 BB_min;
+    Vec3 BB_max;
+    Box BBox;
+
     std::vector<MeshVertex> vertices;
     std::vector<MeshTriangle> triangles;
 
@@ -104,6 +106,7 @@ public:
 
     Material material;
 
+
     void loadOFF (const std::string & filename);
     void recomputeNormals ();
     void centerAndScaleToUnit ();
@@ -111,14 +114,25 @@ public:
 
 
     virtual
-    void build_arrays() {
+    void build_arrays() { //La on ou build les données
         recomputeNormals();
         build_positions_array();
         build_normals_array();
         build_UVs_array();
         build_triangles_array();
+        //Set up les bornes a un elements pour toruver les min et les max
+        BB_min = vertices[0].position;
+        BB_max = vertices[0].position;
+        for(MeshVertex v : vertices){
+            for(unsigned char p =0; p<3;p++){
+                if(v.position[p]<BB_min[p]) 
+                BB_min[p] = v.position[p] - EPSILON;
+                if(v.position[p]>BB_max[p]) 
+                BB_max[p] = v.position[p] + EPSILON;
+            }
+        }
+        BBox = Box(BB_min,BB_max);
     }
-
 
     void translate( Vec3 const & translation ){
         for( unsigned int v = 0 ; v < vertices.size() ; ++v ) {
@@ -198,22 +212,36 @@ public:
 
     }
 
-    RayTriangleIntersection intersect( Ray const & ray ) const {
+    RayTriangleIntersection intersect( Ray const & ray, bool shadowchecking ) const {
         RayTriangleIntersection closestIntersection;
         closestIntersection.t = FLT_MAX;
+        //RayTriangleIntersection BBox_interesection;
+        Box Bounding_box = Box(BB_min,BB_max);
+        //std::cout<<BB_max<<BB_min<<std::end;
+        bool touchingbox = Bounding_box.intersect(ray).intersectionExists;
+        if (!touchingbox){
+            closestIntersection.intersectionExists = false;
+            return closestIntersection;
+        }
         // Note :
         // Creer un objet Triangle pour chaque face
         for(size_t i = 0; i < triangles.size();i++) // Pour tout les triangles de mon mesh
         {   
             //On recup les positions des 3 sommets de chaque triangle
-            Vec3 s0 = vertices[triangles[i].v[0]].position; 
-            Vec3 s1 = vertices[triangles[i].v[1]].position;
-            Vec3 s2 = vertices[triangles[i].v[2]].position;
+            MeshVertex s0 = vertices[triangles[i].v[0]]; 
+            MeshVertex s1 = vertices[triangles[i].v[1]];
+            MeshVertex s2 = vertices[triangles[i].v[2]];
             //std::cout<<s0<<" "<<s1<<" "<<s2<<std::endl;
-            Triangle current_tri = Triangle(s0,s1,s2);
+            float triangleScaling = 1.000001;
+            //triangleScaling =1;
+            Triangle current_tri = Triangle(s0.position*triangleScaling,s1.position*triangleScaling,s2.position*triangleScaling);
+        
             RayTriangleIntersection current_intersect = current_tri.getIntersection(ray);
             if (current_intersect.intersectionExists && current_intersect.t < closestIntersection.t){ // Si on intersect et qu'on est plus proche que le closest actuel
                 closestIntersection = current_intersect;
+                closestIntersection.tIndex = i;
+                closestIntersection.normal = closestIntersection.w0 * s0.normal + closestIntersection.w1 * s1.normal + closestIntersection.w2 * s2.normal;
+                closestIntersection.normal.normalize();
             }
         }
         //Triangle 

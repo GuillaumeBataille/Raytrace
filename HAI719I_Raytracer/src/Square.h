@@ -4,6 +4,7 @@
 #include <vector>
 #include "Mesh.h"
 #include <cmath>
+#include "Triangle.h"
 
 double EPSILON_up = 0.00001;
 double EPSILON_down = 0.0001;
@@ -88,6 +89,14 @@ public:
     float getvmin() const { return this->vertices[0].v; }
     RaySquareIntersection intersect(const Ray &ray) const
     {
+
+        //ESSAI
+        Triangle t1 = Triangle(bottomLeft(), bottomRight(),upRight());
+        Triangle t2 = Triangle(bottomLeft(), upRight(),upLeft());
+        
+        RayTriangleIntersection inter1 = t1.getIntersection(ray);
+        RayTriangleIntersection inter2 = t2.getIntersection(ray);
+        //ESSAI
         RaySquareIntersection intersection;
 
         Vec3 d = ray.direction();
@@ -128,8 +137,20 @@ public:
             double APy = Vec3::dot(ABy, AP) / ABy.norm();
             double ABx_norm = ABx.norm();
             double ABy_norm = ABy.norm();
+        
+        if (inter1.intersectionExists || inter2.intersectionExists){
+                intersection.intersectionExists = true;
+                intersection.t = t;
+                intersection.normal = n;
+                intersection.intersection = inter;
+                intersection.u = APx;
+                intersection.v = APy;
+                intersection.bounce_direction = d - 2 * intersection.normal *( Vec3::dot(d,intersection.normal));
+        }
+           
             // Si la norme Proj x < norme ABx alors on est dans le carré en X (cf en y)
-            if (APx <= ABx.norm() && APx > 0 && APy <= ABy.norm() && APy > 0)
+            /*if (APx <= ABx.norm() && APx > 0 && APy <= ABy.norm() && APy > 0)
+      
             {
                 intersection.intersectionExists = true;
                 intersection.t = t;
@@ -142,7 +163,7 @@ public:
             else
             {
                 intersection.intersectionExists = false;
-            }
+            }*/
         }
         return intersection;
     }

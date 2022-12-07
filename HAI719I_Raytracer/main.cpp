@@ -39,9 +39,11 @@ using namespace std;
 // OpenGL/GLUT application code.
 // -------------------------------------------
 //Variable globale
-#define NBSAMPLE 5
+#define NBSAMPLE 20
 #define NBBOUNCE 1
 #define ZNEAR 5
+#define CURRENT_SCENE 4
+#define SCENE_NB 6
 static GLint window;
 static unsigned int SCREENWIDTH = 480;
 static unsigned int SCREENHEIGHT = 480;
@@ -201,6 +203,7 @@ void ray_trace_from_camera()
 
             image[x + y * w] /= nsamples;
         }
+        std::cout<< y << " / " << h << std::endl;
     }
     std::cout << "\tDone" << std::endl;
     /* // DEBUG ///////////////////////////computeIntersection(light, 0.0001).t
@@ -362,13 +365,14 @@ int main(int argc, char **argv)
     key('?', 0, 0);
 
     camera.move(0., 0., -3.1);
-    selected_scene = 2;
-    scenes.resize(5);
+    selected_scene = CURRENT_SCENE;
+    scenes.resize(SCENE_NB);
     scenes[0].setup_single_sphere();
     scenes[1].setup_single_square();
     scenes[2].setup_cornell_box();
     scenes[3].setup_single_mesh();
     scenes[4].setup_cornell_box_mesh();
+    scenes[5].setup_cornell_original();
 
     glutMainLoop();
     return EXIT_SUCCESS;
